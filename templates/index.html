@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Practice</title>
+  <style>
+    body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 20px;
+  }
+  
+  h1 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  h2 {
+    color: #555;
+    margin-top: 30px;
+  }
+  
+  input {
+    padding: 10px;
+    margin: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 200px;
+  }
+  
+  button {
+    padding: 10px 15px;
+    margin: 5px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
+  #employee-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  #employee-table th, #employee-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  #employee-table th {
+    background-color: #f2f2f2;
+    color: #333;
+  }
+  
+  .result {
+    margin: 20px 0;
+    padding: 10px;
+    background-color: #e2e3e5;
+    border-left: 5px solid #007bff;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  </style>
+<script>
+const apiBase = 'http://host:port/employees'; 
+
+async function createEmployee() {
+  const id = document.getElementById('create-id').value;
+  const name = document.getElementById('create-name').value;
+  const email = document.getElementById('create-email').value;
+  const role = document.getElementById('create-role').value;
+
+  const response = await fetch(apiBase, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, name, email, role })
+  });
+  if (response.status > 300) {
+    alert(`${response.statusText}, ${response.status}`);
+  }
+  const result = await response.json();
+  const msg = result.message || 'Error occurred';
+  alert(msg);
+}
+
+async function getEmployees() {
+  const response = await fetch(apiBase);
+  if (response.status > 300) {
+    alert(`${response.statusText}, ${response.status}`);
+  }
+  const employees = await response.json();
+
+  const table = document.getElementById('employee-table');
+  table.innerHTML = '<tr><th>ID</th><th>NAME</th><th>EMAIL</th><th>ROLE</th></tr>';
+
+  if (Array.isArray(employees)) {
+    employees.forEach(emp => {
+      const row = table.insertRow();
+      row.insertCell(0).textContent = emp.ID;
+      row.insertCell(1).textContent = emp.NAME;
+      row.insertCell(2).textContent = emp.EMAIL;
+      row.insertCell(3).textContent = emp.ROLE;
+    });
+  } else {
+    const msg = employees.message || 'No employees found';
+    alert(msg);
+    return;
+  }
+}
+
+async function findEmployeeById() {
+  const id = document.getElementById('find-id').value;
+  if (!id.length) {
+    alert('Please enter an ID');
+    return;
+  }
+  const response = await fetch(`${apiBase}/${id}`);
+  if (response.status > 300) {
+    alert(`${response.statusText}, ${response.status}`);
+    return;
+  }
+  console.log(response);
+  const employee = await response.json();
+  console.log(employee);
+
+  if (employee.ID) {
+    document.getElementById('result').textContent = `ID: ${employee.ID}, NAME: ${employee.NAME}, EMAIL: ${employee.EMAIL}, ROLE: ${employee.ROLE}`;
+  } else {
+    const msg = employee.message || 'Employee not found';
+    alert(msg);
+  }
+}
+
+async function updateEmployee() {
+  const id = document.getElementById('update-id').value;
+  if (!id.length) {
+    alert('Please enter an ID');
+    return;
+  }
+  const name = document.getElementById('update-name').value;
+  const email = document.getElementById('update-email').value;
+  const role = document.getElementById('update-role').value;
+  if (!((name+email+role).length)) {
+    alert('Please enter employee information');
+    return;
+  }
+
+  body = new Object();
+  const abc = 'abc';
+  if (!!name.length) {
+    body.name = name;
+  }
+  if (!!email.length) {
+    body.email = email;
+  }
+  if (!!role.length) {
+    body.role = role;
+  }
+
+  const response = await fetch(`${apiBase}/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (response.status > 300) {
+    alert(`${response.statusText}, ${response.status}`);
+    return;
+  }
+
+  if (response.status === 204) {
+    alert('Employee updated successfully');
+  } else {
+    const result = await response.json();
+    const message = result.message || 'Error occurred';
+    alert(message);
+  }
+}
+
+async function deleteEmployee() {
+  const id = document.getElementById('delete-id').value;
+  if (!id.length) {
+    alert('Please enter an ID');
+    return;
+  }
+  const response = await fetch(`${apiBase}/${id}`, { method: 'DELETE' });
+  if (response.status > 300) {
+    alert(`${response.statusText}, ${response.status}`);
+    return;
+  }
+
+  if (response.status === 204) {
+    const msg = 'Employee deleted successfully';
+  } else {
+    const result = await response.json();
+    const msg = result.message || 'Error occurred';
+  }
+  alert(msg);
+}
+
+
+</script>
+</head>
+<body>
+  <h1>Employee Management</h1>
+
+  <h2>Register Employee</h2>
+  <input type="text" id="create-id" placeholder="ID">
+  <input type="text" id="create-name" placeholder="NAME">
+  <input type="text" id="create-email" placeholder="EMAIL">
+  <input type="text" id="create-role" placeholder="ROLE">
+  <button onclick="createEmployee()">Register</button>
+
+  <h2>Employee List</h2>
+  <button onclick="getEmployees()">Retrieve</button>
+  <table border="1" id="employee-table">
+    <tr>
+      <th>ID</th>
+      <th>NAME</th>
+      <th>EMAIL</th>
+      <th>ROLE</th>
+    </tr>
+  </table>
+
+  <h2>Find Employee</h2>
+  <input type="text" id="find-id" placeholder="ID">
+  <button onclick="findEmployeeById()">Retrieve</button>
+  <div id="result" class="result"></div>
+
+  <h2>Update Employee</h2>
+  <input type="text" id="update-id" placeholder="ID">
+  <input type="text" id="update-name" placeholder="NAME">
+  <input type="text" id="update-email" placeholder="EMAIL">
+  <input type="text" id="update-role" placeholder="ROLE">
+  <button onclick="updateEmployee()">Update</button>
+
+  <h2>Delete Employee</h2>
+  <input type="text" id="delete-id" placeholder="ID">
+  <button onclick="deleteEmployee()">Delete</button>
+
+</body>
+</html>

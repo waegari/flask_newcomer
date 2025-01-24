@@ -24,7 +24,7 @@ class DB:
         print('db instance init')
 
     def getQuery(self):
-        print(f'getQuery: {self.task}, {self.body if self.body else ''} {self.req_params if self.req_params else ''}')
+        print(f'getQuery: {self.task}, {self.body if self.body else ""} {self.req_params if self.req_params else ""}')
         if self.task == Task.CREATE:
             columns = ', '.join(list(self.body.keys()))
             placeholders = ', '.join([':' + str(i + 1) for i in range(len(self.body.values()))])

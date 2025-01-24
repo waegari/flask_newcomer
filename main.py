@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, render_template
 from db_conn import user, password, dsn
 from db import DB, Task, Request
 from flask_cors import CORS
@@ -9,6 +9,14 @@ oracledb.init_oracle_client()
 
 app = Flask(__name__)
 CORS(app)
+
+@app.route('/')
+def index():
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        return jsonify({"error": "Main page not found."}), 404
+
 @app.route('/employees', methods=['POST'])
 def create_employee():
     try:
@@ -99,13 +107,6 @@ def delete_employee(id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-@app.route('/', methods=['GET'])
-def serve_mainpage():
-    try:
-        return send_from_directory(os.path.join(os.getcwd(), 'mainpage'), 'index.html')
-    except Exception as e:
-        return jsonify({"error": "Main page not found."}), 404
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
